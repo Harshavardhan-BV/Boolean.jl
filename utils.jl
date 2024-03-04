@@ -2,7 +2,7 @@
 function topo2interaction(topoFile::String, type::Int=0)
     df = DataFrame(CSV.File(topoFile))
     dropmissing!(df)
-    Nodes = sort(unique(vcat(df.Source, df.Target)))
+    Nodes = sort(unique(vcat(df[:,1], df[:,2])))
     n_nodes = length(Nodes)
     update_matrix = zeros(Int64, n_nodes, n_nodes)
     for i in 1:size(df, 1)
