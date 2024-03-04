@@ -50,6 +50,25 @@ function edgeWeightPert(topoFile::String; nPerts::Int=10000, nInit::Int64=10000,
 
 end
 
+function knownWeightPert(topoFile::String, datFile::String; nInit::Int64=10000, nIter::Int64=1000,
+    mode::String="Async", stateRep::Int64=-1, reps::Int = 3, csv::Bool=false, types::Array{Int, 1} = [0],)
+    # Read the datFile (modify the edgeWeightPert.dat file for correct order)
+    rands = DataFrame(CSV.File(datFile))[:,1:end-1]
+    # Iterate over columns
+    Threads.@threads for i in names(rands)
+        # println(string(i))
+        bmodel_reps(topoFile; nInit = nInit, nIter = nIter, mode = mode,
+        stateRep = stateRep, randSim=true, root = i, 
+        randVec = rands[:,i], types = types, reps = reps)
+    end
+    nodesName = join([replace(topoFile, ".topo" => ""), "_nodes.txt"])
+    update_matrix,Nodes = topo2interaction(topoFile)
+    io = open(nodesName, "w")
+    for i in Nodes
+        println(io, i)
+    end
+    close(io);
+end    
 
 function getSSListRand(topoFile::String;
     minWeight::Float64=0.0, maxWeight::Float64=1.0, nPerts::Int=10000)
